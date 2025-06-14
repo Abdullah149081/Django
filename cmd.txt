@@ -1,0 +1,3 @@
+➜ python -m venv task_env
+➜ task_env/Scripts/activate
+django-admin startproject task_management
