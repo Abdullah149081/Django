@@ -6,4 +6,8 @@ from django.http import HttpResponse
 
 
 def manager_dashboard(request):
-    return render(request, "dashboard/dashboard.html")
+    return render(request, "dashboard/manager-dashboard.html")
+
+
+def usr_dashboard(request):
+    return render(request, "dashboard/user-dashboard.html")
