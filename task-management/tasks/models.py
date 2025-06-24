@@ -10,3 +10,29 @@ class Task(models.Model):
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    project = models.ForeignKey(
+        "Project",
+        on_delete=models.CASCADE,
+        default=1,  # Default to project with ID 1
+    )
+
+
+class TaskDetail(models.Model):
+    high = "H"
+    medium = "M"
+    low = "L"
+
+    PRIORITY_CHOICES = (
+        (low, "Low"),
+        (medium, "Medium"),
+        (high, "High"),
+    )
+
+    assigned_to = models.CharField(max_length=100)
+    priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default=medium)
+    task = models.OneToOneField(Task, on_delete=models.CASCADE)
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=200)
+    start_date = models.DateField(null=True, blank=True)
