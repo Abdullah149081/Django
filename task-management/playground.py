@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "task_management.settings")
 django.setup()
 
-from tasks.models import Task, TaskDetail, Project
+from tasks.models import Task, TaskDetail, Project, Employee
 
 
 def print_table(data, headers, title="", tablefmt="fancy_grid"):
@@ -20,25 +20,17 @@ def print_table(data, headers, title="", tablefmt="fancy_grid"):
 
 
 def main():
-    task1 = Task.objects.create(
-        title="Task 1",
-        description="Description for Task 1",
-        due_date="2023-12-31",
-        is_completed=False,
-    )
-    task2 = Task.objects.create(
-        title="Task 2",
-        description="Description for Task 2",
-        due_date="2024-01-15",
-        is_completed=True,
+    # Welcome message
+    print("Welcome to the Task Management Playground!")
+
+    TaskDetail.objects.create(
+        task=Task.objects.get(id=2),
+        assigned_to="Jane Smith",
+        priority="M",  # Use a single character as per the model's field definition
     )
 
-    task3 = Task.objects.create(
-        title="Task 3",
-        description="Description for Task 3",
-        due_date="2024-02-28",
-        is_completed=True,
-    )
+    # Display all tasks
+    # print_table("")
 
 
 if __name__ == "__main__":

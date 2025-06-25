@@ -11,3 +11,7 @@ def manager_dashboard(request):
 
 def usr_dashboard(request):
     return render(request, "dashboard/user-dashboard.html")
+
+
+def create_task(request):
+    return render(request, "form.html")

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Task management application.">
+        <meta name="keywords" content="task, management, django, project">
+        <title>Form</title>
+    </head>
+    <body>
+        <main>
+            <h1>Form</h1>
+            <p>This is the form page of the task management application.</p>
+            <form action="{% url 'your_form_view_name' %}">
+                <label for="task">Task:</label>
+                <input type="text" id="task" name="task" required>
+                <br>
+                <label for="assigned_to">Assigned To:</label>
+                <input type="text" id="assigned_to" name="assigned_to" required>
+                <br>
+                <label for="priority">Priority:</label>
+                <select id="priority" name="priority">
+                    <option value="H">High</option>
+                    <option value="M">Medium</option>
+                    <option value="L">Low</option>
+                </select>
+                <br>
+                <input type="submit" value="Submit">
+            </form>
+        </main>
+    </body>
+</html>
