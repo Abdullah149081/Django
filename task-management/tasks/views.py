@@ -17,7 +17,10 @@ def user_dashboard(request):
 
 
 def create_task(request):
-    # employees = Employee.objects.all()
+    """View to create a new task.
+    This view handles the creation of a new task by processing the form submission.
+    If the form is valid, it saves the task and redirects to the same page with a success message.
+    """
     form = TaskForms()
 
     if request.method == "POST":
@@ -27,24 +30,16 @@ def create_task(request):
             form.save()
             messages.success(request, "Task created successfully!")  # ✅ here
             return redirect("create_task")
-
-            # Django forms Data
-            # print("Task created with data:", form.cleaned_data)
-            # data = form.cleaned_data
-
-            # task = Task.objects.create(
-            #     title=data["title"],
-            #     description=data["description"],
-            #     due_date=data["due_date"],
-            # )
-            # assigned_to = data["assigned_to"]
-
-            # for emp_id in assigned_to:
-            #     employee = Employee.objects.get(id=emp_id)
-            #     task.assigned_to.add(employee)
-            # return HttpResponse("Task created successfully!")
     return render(
         request,
         "form.html",
         {"form": form, "success": "Task created successfully!"},
     )
+
+
+def view_tasks(request):
+    """View to display all tasks.
+    This view retrieves all tasks from the database and renders them in a template.
+    """
+    tasks = Task.objects.filter(status=Task.IN_PROGRESS)
+    return render(request, "show.html", {"tasks": tasks})

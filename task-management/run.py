@@ -17,6 +17,7 @@ COMMANDS = {
     "tailwind": "python manage.py tailwind start",
     "start": "combined_start",
     "shell": "python manage.py shell_plus --ptpython",
+    "drop": "python manage.py flush --no-input",
 }
 
 

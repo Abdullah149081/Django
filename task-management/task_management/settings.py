@@ -43,6 +43,13 @@ INSTALLED_APPS = [
     "theme",
     "django_browser_reload",
     "django_extensions",
+    "debug_toolbar",
+]
+
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
 ]
 
 TAILWIND_APP_NAME = "theme"
@@ -57,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "task_management.urls"
@@ -92,7 +100,7 @@ WSGI_APPLICATION = "task_management.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "task-management",
+        "NAME": "task_management",
         "USER": "postgres",
         "PASSWORD": "123456",
         "HOST": "localhost",
