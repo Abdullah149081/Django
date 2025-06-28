@@ -3,30 +3,50 @@ from django.http import HttpResponse
 from tasks.forms import TaskForms
 from tasks.models import Employee, Task
 from django.contrib import messages
+from django.db.models import Count, Q
 
 
 # Create your views here.
 
+"""
+Django ORM Query Optimization Tips:
+| Situation                  | Use                              |
+|----------------------------|----------------------------------|
+| ForeignKey/OTM (OneToOne)  | select_related("field_name")     |
+| ManyToMany or reverse FK   | prefetch_related("field_name")   |
+| Need both                  | Combine them as needed           |
+"""
+
 
 def manager_dashboard(request):
-    try:
-        tasks = Task.objects.all()
-        context = {
-            "tasks": tasks,
-            "total_tasks": tasks.count(),
-            "pd_tasks": tasks.filter(status=Task.PENDING).count(),
-            "in_progress_tasks": tasks.filter(status=Task.IN_PROGRESS).count(),
-            "completed_tasks": tasks.filter(status=Task.COMPLETED).count(),
-        }
-    except Exception as e:
-        messages.error(request, f"Error loading dashboard: {e}")
-        context = {
-            "tasks": [],
-            "total_tasks": 0,
-            "pd_tasks": 0,
-            "in_progress_tasks": 0,
-            "completed_tasks": 0,
-        }
+    type = request.GET.get("type", "all")
+
+    status_filter = {
+        "pd": Task.PENDING,
+        "in_progress": Task.IN_PROGRESS,
+        "completed": Task.COMPLETED,
+    }.get(type)
+
+    tasks_qs = Task.objects.select_related("detail").prefetch_related("assigned_to")
+
+    if status_filter:
+        tasks = tasks_qs.filter(status=status_filter)
+    else:
+        tasks = tasks_qs.all()
+
+    status_counts = Task.objects.aggregate(
+        pd_tasks=Count("id", filter=Q(status=Task.PENDING)),
+        in_progress_tasks=Count("id", filter=Q(status=Task.IN_PROGRESS)),
+        completed_tasks=Count("id", filter=Q(status=Task.COMPLETED)),
+    )
+
+    context = {
+        "tasks": tasks,
+        "total_tasks": Task.objects.count(),
+        "pd_tasks": status_counts["pd_tasks"],
+        "in_progress_tasks": status_counts["in_progress_tasks"],
+        "completed_tasks": status_counts["completed_tasks"],
+    }
     return render(request, "dashboard/manager-dashboard.html", context)
 
 

@@ -26,7 +26,9 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         default=1,  # Default to project with ID 1
     )  # One-to-many relationship
-    assigned_to = models.ManyToManyField("Employee")  # Many-to-many relationship
+    assigned_to = models.ManyToManyField(
+        "Employee", related_name="tasks"
+    )  # Many-to-many relationship
 
     def __str__(self):
         return self.title
