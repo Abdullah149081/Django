@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from tasks.forms import TaskForms
+from tasks.forms import TaskForms, TaskDetailForm
 from tasks.models import Employee, Task
 from django.contrib import messages
 from django.db.models import Count, Q
+from django.db import transaction
 
 
 # Create your views here.
@@ -55,23 +56,41 @@ def user_dashboard(request):
 
 
 def create_task(request):
-    """View to create a new task.
-    This view handles the creation of a new task by processing the form submission.
-    If the form is valid, it saves the task and redirects to the same page with a success message.
     """
-    form = TaskForms()
+    View to create a new task.
+    Handles both Task and TaskDetail forms in a single transaction.
+    On success, redirects and shows a success message.
 
+    transaction.atomic() is used to ensure that both forms are saved together,
+    and if any error occurs, the transaction is rolled back to maintain data integrity.
+    """
     if request.method == "POST":
         form = TaskForms(request.POST)
+        task_detail_form = TaskDetailForm(request.POST)
+        if form.is_valid() and task_detail_form.is_valid():
+            try:
+                with transaction.atomic():
+                    task = form.save()
+                    task_detail = task_detail_form.save(commit=False)
+                    task_detail.task = task
+                    task_detail.save()
+                messages.success(request, "Task created successfully!")
+                return redirect("create_task")
+            except Exception as e:
+                messages.error(request, f"Error creating task: {e}")
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = TaskForms()
+        task_detail_form = TaskDetailForm()
 
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Task created successfully!")  # ✅ here
-            return redirect("create_task")
     return render(
         request,
         "form.html",
-        {"form": form, "success": "Task created successfully!"},
+        {
+            "form": form,
+            "task_detail_form": task_detail_form,
+        },
     )
 
 

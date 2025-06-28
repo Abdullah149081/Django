@@ -1,4 +1,4 @@
-from tasks.models import Task
+from tasks.models import Task, TaskDetail
 from django import forms
 
 
@@ -33,6 +33,29 @@ class TaskForms(forms.ModelForm):
             "due_date": "Due Date",
             "assigned_to": "Assigned To",
             "priority": "Priority",
+        }
+
+
+class TaskDetailForm(forms.ModelForm):
+    class Meta:
+        model = TaskDetail
+        fields = ["priority", "notes"]
+        widgets = {
+            "priority": forms.Select(
+                attrs={
+                    "class": "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                }
+            ),
+            "notes": forms.Textarea(
+                attrs={
+                    "class": "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline",
+                    "placeholder": "Enter additional notes",
+                }
+            ),
+        }
+        labels = {
+            "priority": "Priority Level",
+            "notes": "Additional Notes",
         }
 
 
