@@ -6,7 +6,7 @@
   <div class="max-w-[1400px] mx-auto">
     <!-- Header  -->
     <header class="flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-semibold">Dashboard masud</h1>
+      <h1 class="text-2xl font-semibold">Dashboard</h1>
       <div class="flex items-center gap-4">
         <button class="p-2 rounded-full hover:bg-gray-100 relative">
           <svg xmlns="http://www.w3.org/2000/svg"
@@ -27,7 +27,7 @@
         <h3 class="text-sm font-medium text-gray-500 mb-4">TOTAL TASK</h3>
         <div class="flex justify-between items-start">
           <div>
-            <p class="text-3xl font-semibold mb-1">3</p>
+            <p class="text-3xl font-semibold mb-1">{{ total_tasks }}</p>
             <p class="text-gray-500 text-sm">11 last month</p>
           </div>
           <div class="bg-blue-100 p-3 rounded-full">
@@ -46,7 +46,7 @@
         <h3 class="text-sm font-medium text-gray-500 mb-4">COMPLETED TASK</h3>
         <div class="flex justify-between items-start">
           <div>
-            <p class="text-3xl font-semibold mb-1">1</p>
+            <p class="text-3xl font-semibold mb-1">{{ completed_tasks }}</p>
             <p class="text-gray-500 text-sm">11 last month</p>
           </div>
           <div class="bg-green-100 p-3 rounded-full">
@@ -66,7 +66,7 @@
         <h3 class="text-sm font-medium text-gray-500 mb-4">TASK IN PROGRESS</h3>
         <div class="flex justify-between items-start">
           <div>
-            <p class="text-3xl font-semibold mb-1">1</p>
+            <p class="text-3xl font-semibold mb-1">{{ in_progress_tasks }}</p>
             <p class="text-gray-500 text-sm">11 last month</p>
           </div>
           <div class="bg-yellow-100 p-3 rounded-full">
@@ -86,7 +86,7 @@
         <h3 class="text-sm font-medium text-gray-500 mb-4">TODOS</h3>
         <div class="flex justify-between items-start">
           <div>
-            <p class="text-3xl font-semibold mb-1">1</p>
+            <p class="text-3xl font-semibold mb-1">{{ pd_tasks }}</p>
             <p class="text-gray-500 text-sm">11 last month</p>
           </div>
           <div class="bg-purple-100 p-3 rounded-full">

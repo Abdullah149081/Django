@@ -9,7 +9,25 @@ from django.contrib import messages
 
 
 def manager_dashboard(request):
-    return render(request, "dashboard/manager-dashboard.html")
+    try:
+        tasks = Task.objects.all()
+        context = {
+            "tasks": tasks,
+            "total_tasks": tasks.count(),
+            "pd_tasks": tasks.filter(status=Task.PENDING).count(),
+            "in_progress_tasks": tasks.filter(status=Task.IN_PROGRESS).count(),
+            "completed_tasks": tasks.filter(status=Task.COMPLETED).count(),
+        }
+    except Exception as e:
+        messages.error(request, f"Error loading dashboard: {e}")
+        context = {
+            "tasks": [],
+            "total_tasks": 0,
+            "pd_tasks": 0,
+            "in_progress_tasks": 0,
+            "completed_tasks": 0,
+        }
+    return render(request, "dashboard/manager-dashboard.html", context)
 
 
 def user_dashboard(request):
