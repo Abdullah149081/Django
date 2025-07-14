@@ -8,3 +8,9 @@
   * the scope of this path.
   */
 @source "../../../**/*.{html,py,js}";
+
+@layer components {
+  .btn {
+    @apply bg-green-500 px-4 py-2 uppercase tracking-wider cursor-pointer shadow rounded-full hover:bg-green-600 text-white font-semibold transition-colors duration-300;
+  }
+}

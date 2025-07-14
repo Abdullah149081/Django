@@ -3,6 +3,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <meta name="description"
+              content="Task Management Form for creating and updating tasks." />
+        <meta name="keywords"
+              content="task, management, form, create, update, assign, due date, priority" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>
             {% if is_create %}
@@ -70,6 +74,7 @@
                     {{ task_detail_form.notes }}
                     {% for error in task_detail_form.notes.errors %}<p class="text-red-600 text-sm">{{ error }}</p>{% endfor %}
                 </div>
+                {% comment %} {% if form.name.errors %}<div class="text-red-500 text-sm mt-1">{{ form.name.errors }}</div>{% endif %} {% endcomment %}
                 <button type="submit"
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
                     {% if is_create %}

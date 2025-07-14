@@ -83,62 +83,137 @@ def view_tasks(request):
     return render(request, "show.html", {"tasks": tasks})
 
 
-def create_task(request):
+def handle_task_forms(request, task=None):
+    """
+    Handles both create and update logic for Task and TaskDetail.
+    Returns (task_form, task_detail_form, success, redirect_url, is_create).
+    """
+    is_create = task is None
+    task_form = TaskForms(request.POST or None, instance=task)
+    task_detail_instance = getattr(task, "detail", None) if task else None
+    task_detail_form = TaskDetailForm(
+        request.POST or None, instance=task_detail_instance
+    )
+
     if request.method == "POST":
-        task_form = TaskForms(request.POST)
-        task_detail_form = TaskDetailForm(request.POST)
         if task_form.is_valid() and task_detail_form.is_valid():
-            task = task_form.save(commit=False)  # <-- commit=False here
-            task_detail = task_detail_form.save(commit=False)
-            task.save()  # <-- save model instance first
-            task_form.save_m2m()  # <-- now save many-to-many
-            task_detail.task = task
-            task_detail.save()
-            messages.success(request, "Task created successfully!")
-            return redirect("manager_dashboard")
+            try:
+                with transaction.atomic():
+                    task = task_form.save(commit=False)
+                    task.save()
+                    task_form.save_m2m()
+
+                    task_detail = task_detail_form.save(commit=False)
+                    task_detail.task = task
+                    task_detail.save()
+
+                messages.success(
+                    request,
+                    f"Task {'created' if is_create else 'updated'} successfully!",
+                )
+                return task_form, task_detail_form, True, "manager_dashboard", is_create
+            except Exception as e:
+                messages.error(
+                    request,
+                    f"An error occurred while {'creating' if is_create else 'updating'} task: {e}",
+                )
         else:
             messages.error(request, "Please correct the errors below.")
-    else:
-        task_form = TaskForms()
-        task_detail_form = TaskDetailForm()
 
+    return task_form, task_detail_form, False, None, is_create
+
+
+def create_task(request):
+    task_form, task_detail_form, success, redirect_url, is_create = handle_task_forms(
+        request
+    )
+    if success:
+        return redirect(redirect_url)
     return render(
         request,
         "form.html",
         {
             "task_form": task_form,
             "task_detail_form": task_detail_form,
-            "is_create": True,
+            "is_create": is_create,
         },
     )
 
 
 def update_task(request, task_id):
-    task = Task.objects.get(id=task_id)
-    try:
-        task_detail = task.detail
-    except TaskDetail.DoesNotExist:
-        task_detail = None
+    task = get_object_or_404(Task, id=task_id)
+    task_form, task_detail_form, success, redirect_url, is_create = handle_task_forms(
+        request, task
+    )
+    if success:
+        return redirect(redirect_url)
+    return render(
+        request,
+        "form.html",
+        {
+            "task_form": task_form,
+            "task_detail_form": task_detail_form,
+            "is_create": is_create,
+        },
+    )
 
-    if request.method == "POST":
-        task_form = TaskForms(request.POST, instance=task)
-        task_detail_form = TaskDetailForm(request.POST, instance=task_detail)
-        if task_form.is_valid() and task_detail_form.is_valid():
-            task = task_form.save(commit=False)
-            task_detail = task_detail_form.save(commit=False)
-            task_detail.task = task
-            task.save()
-            # Save the many-to-many data properly:
-            task_form.save_m2m()
-            task_detail.save()
 
-            messages.success(request, "Task Updated Successfully")
-            return redirect("manager_dashboard")
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        task_form = TaskForms(instance=task)
-        task_detail_form = TaskDetailForm(instance=task_detail)
+# def create_task(request):
+#     if request.method == "POST":
+#         task_form = TaskForms(request.POST)
+#         task_detail_form = TaskDetailForm(request.POST)
+#         if task_form.is_valid() and task_detail_form.is_valid():
+#             task = task_form.save(commit=False)  # <-- commit=False here
+#             task_detail = task_detail_form.save(commit=False)
+#             task.save()  # <-- save model instance first
+#             task_form.save_m2m()  # <-- now save many-to-many
+#             task_detail.task = task
+#             task_detail.save()
+#             messages.success(request, "Task created successfully!")
+#             return redirect("manager_dashboard")
+#         else:
+#             messages.error(request, "Please correct the errors below.")
+#     else:
+#         task_form = TaskForms()
+#         task_detail_form = TaskDetailForm()
 
-    context = {"task_form": task_form, "task_detail_form": task_detail_form}
-    return render(request, "form.html", context)
+#     return render(
+#         request,
+#         "form.html",
+#         {
+#             "task_form": task_form,
+#             "task_detail_form": task_detail_form,
+#             "is_create": True,
+#         },
+#     )
+
+
+# def update_task(request, task_id):
+#     task = Task.objects.get(id=task_id)
+#     try:
+#         task_detail = task.detail
+#     except TaskDetail.DoesNotExist:
+#         task_detail = None
+
+#     if request.method == "POST":
+#         task_form = TaskForms(request.POST, instance=task)
+#         task_detail_form = TaskDetailForm(request.POST, instance=task_detail)
+#         if task_form.is_valid() and task_detail_form.is_valid():
+#             task = task_form.save(commit=False)
+#             task_detail = task_detail_form.save(commit=False)
+#             task_detail.task = task
+#             task.save()
+#             # Save the many-to-many data properly:
+#             task_form.save_m2m()
+#             task_detail.save()
+
+#             messages.success(request, "Task Updated Successfully")
+#             return redirect("manager_dashboard")
+#         else:
+#             messages.error(request, "Please correct the errors below.")
+#     else:
+#         task_form = TaskForms(instance=task)
+#         task_detail_form = TaskDetailForm(instance=task_detail)
+
+#     context = {"task_form": task_form, "task_detail_form": task_detail_form}
+#     return render(request, "form.html", context)

@@ -7,7 +7,6 @@ from tasks.views import (
     update_task,
     delete_task,
 )
-from debug_toolbar.toolbar import debug_toolbar_urls
 
 
 urlpatterns = [
@@ -19,4 +18,4 @@ urlpatterns = [
     ),  # Assuming view_tasks is the correct view for this URL
     path("update_task/<int:task_id>/", update_task, name="update_task"),
     path("delete_task/<int:task_id>/", delete_task, name="delete_task"),
-] + debug_toolbar_urls()  # Include Debug Toolbar URLs if installed
+]

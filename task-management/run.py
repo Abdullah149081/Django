@@ -18,6 +18,10 @@ COMMANDS = {
     "start": "combined_start",
     "shell": "python manage.py shell_plus --ptpython",
     "drop": "python manage.py flush --no-input",
+    "superuser": "python manage.py createsuperuser",
+    "collectstatic": "python manage.py collectstatic --no-input",
+    "test": "python manage.py test",
+    
 }
 
 
