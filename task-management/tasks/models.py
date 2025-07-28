@@ -23,7 +23,7 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     project = models.ForeignKey(
         "Project",
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,
         default=1,  # Default to project with ID 1
     )  # One-to-many relationship
     assigned_to = models.ManyToManyField(

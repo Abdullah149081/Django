@@ -13,10 +13,16 @@ def sign_up(request):
             if User.objects.filter(email=email).exists():
                 messages.error(request, "Email already exists.")
             else:
-                form.save()
-                username = form.cleaned_data.get("username")
-                messages.success(request, f"Account created for {username}!")
-                return redirect("sign_up")
+                user = form.save(commit=False)
+                user.set_password(form.cleaned_data.get("password1"))
+                user.is_active = False  # Set user as inactive until email confirmation
+                user.save()  # This will trigger the post_save signal to send email
+
+                messages.success(
+                    request,
+                    f"Account created for {user.username}! Please check your email to activate your account.",
+                )
+                return redirect("sign_in")
         else:
             messages.error(request, "Please correct the errors below.")
     else:
@@ -29,13 +35,33 @@ def sign_in(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
+
+        # Check if user exists
+        try:
+            user_obj = User.objects.get(username=username)
+            if not user_obj.is_active:
+                messages.error(
+                    request,
+                    "Your account is not activated. Please check your email for activation link.",
+                )
+                return render(request, "auth/login.html")
+        except User.DoesNotExist:
+            pass  # Will be handled by authenticate below
+
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
-            messages.success(request, "Welcome back!")
-            return redirect("manager_dashboard")
+            if user.is_active:
+                login(request, user)
+                messages.success(request, "Welcome back!")
+                return redirect("manager_dashboard")
+            else:
+                messages.error(
+                    request,
+                    "Your account is not activated. Please check your email for activation link.",
+                )
         else:
             messages.error(request, "Invalid username or password.")
+
     return render(request, "auth/login.html")
 
 
