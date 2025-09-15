@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Django Shell Plus (IPython)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/task-management/manage.py",
+      "args": ["shell_plus", "--ipython"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Django Shell Plus (ptpython)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/task-management/manage.py",
+      "args": ["shell_plus", "--ptpython"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
