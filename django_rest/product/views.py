@@ -23,6 +23,7 @@ def product_list_create(request):
     elif request.method == "POST":
         serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -45,15 +46,39 @@ def view_categories(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@api_view(["GET", "PUT", "DELETE"])
 def find_products_by_id(request, id):
     product = get_object_or_404(Product, pk=id)
-    serializer = ProductSerializer(product)
-    return Response({"product": serializer.data})
+    if request.method == "GET":
+        serializer = ProductSerializer(product)
+        return Response({"product": serializer.data})
+
+    elif request.method == "PUT":
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"product": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(["GET"])
+@api_view(["GET", "PUT", "DELETE"])
 def find_category_by_id(request, id):
     category = get_object_or_404(Category, pk=id)
-    serializer = CategorySerializer(category)
-    return Response({"category": serializer.data})
+    if request.method == "GET":
+        serializer = CategorySerializer(category)
+        return Response({"category": serializer.data})
+
+    elif request.method == "PUT":
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"category": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        category.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
