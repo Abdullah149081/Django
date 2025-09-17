@@ -2,6 +2,12 @@ from django.db import models
 
 # Create your models here.
 
+# API Development Steps (as requested):
+# Model - Define data structure
+# Serializer - Convert models to/from JSON
+# ViewSet - Handle HTTP requests
+# Router - Configure URL routing
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -28,3 +34,10 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateField(auto_now_add=True)

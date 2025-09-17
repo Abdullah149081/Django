@@ -1,84 +1,47 @@
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
-from product.models import Product, Category
-from django.db.models import Count
+from product.models import Product, Category, Review
+from django.db.models import Count, QuerySet
+from rest_framework.viewsets import ModelViewSet
+from django_filters.rest_framework import DjangoFilterBackend
+from product.filters import ProductFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
+from product.pagination import DefaultPagination
 
 from product.serializers import (
     CategorySerializer,
-    CategoryCreateSerializer,
     ProductSerializer,
+    ReviewSerializer,
 )
 
 
-@api_view(["GET", "POST"])
-def product_list_create(request):
-    if request.method == "GET":
-        products = Product.objects.select_related("category").all()
-        serializer = ProductSerializer(products, many=True)
-        return Response({"products": serializer.data})
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
-    elif request.method == "POST":
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["GET", "POST"])
-def view_categories(request):
-    if request.method == "GET":
-        categories = Category.objects.annotate(product_count=Count("products")).all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response({"categories": serializer.data})
-
-    elif request.method == "POST":
-        serializer = CategoryCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            category = serializer.save()
+    def destroy(self, request, *args, **kwargs):
+        product = self.get_object()
+        if product.stock > 10:
             return Response(
-                CategorySerializer(category).data, status=status.HTTP_201_CREATED
+                {"error": "Cannot delete a product with stock greater than ten."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return self.perform_destroy(product) or Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
-@api_view(["GET", "PUT", "DELETE"])
-def find_products_by_id(request, id):
-    product = get_object_or_404(Product, pk=id)
-    if request.method == "GET":
-        serializer = ProductSerializer(product)
-        return Response({"product": serializer.data})
-
-    elif request.method == "PUT":
-        serializer = ProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"product": serializer.data})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == "DELETE":
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all().annotate(product_count=Count("products"))
+    serializer_class = CategorySerializer
 
 
-@api_view(["GET", "PUT", "DELETE"])
-def find_category_by_id(request, id):
-    category = get_object_or_404(Category, pk=id)
-    if request.method == "GET":
-        serializer = CategorySerializer(category)
-        return Response({"category": serializer.data})
+class ReviewViewSet(ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
 
-    elif request.method == "PUT":
-        serializer = CategorySerializer(category, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"category": serializer.data})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):  # type: ignore[override]
+        return Review.objects.filter(product_id=self.kwargs["product_pk"])
 
-    elif request.method == "DELETE":
-        category.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_serializer_context(self):
+        return {"product_id": self.kwargs["product_pk"]}
