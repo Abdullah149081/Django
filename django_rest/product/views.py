@@ -43,6 +43,9 @@ class CategoryViewSet(ModelViewSet):
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
+    filter_backends = [OrderingFilter]
+    pagination_class = DefaultPagination
+    ordering_fields = ["name"]
 
     def get_queryset(self):  # type: ignore[override]
         return Review.objects.filter(product_id=self.kwargs["product_pk"])
