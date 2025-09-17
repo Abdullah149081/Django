@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 from product.models import Product, Category, Review
-from django.db.models import Count, QuerySet
+from django.db.models import Count
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from product.filters import ProductFilter
@@ -18,6 +18,11 @@ from product.serializers import (
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ProductFilter
+    pagination_class = DefaultPagination
+    search_fields = ["name", "description"]
+    ordering_fields = ["price", "name", "stock"]
 
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()
@@ -37,7 +42,6 @@ class CategoryViewSet(ModelViewSet):
 
 
 class ReviewViewSet(ModelViewSet):
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     def get_queryset(self):  # type: ignore[override]
