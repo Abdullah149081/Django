@@ -26,3 +26,20 @@ class CartViewSet(
         return Cart.objects.prefetch_related(
             "items__product__category"  # Prefetch cart items with their products and categories
         ).select_related("user")
+
+
+class CartItemViewSet(ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_serializer_class(self):  # type: ignore[override]
+        if self.request.method == "POST":
+            return AddCartItemSerializer
+        elif self.request.method == "PATCH":
+            return UpdateCartItemSerializer
+        return CartItemSerializer
+
+    def get_serializer_context(self):
+        return {"cart_id": self.kwargs["cart_pk"]}
+
+    def get_queryset(self):  # type: ignore[override]
+        return CartItem.objects.filter(cart_id=self.kwargs["cart_pk"])
