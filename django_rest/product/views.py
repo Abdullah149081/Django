@@ -16,13 +16,16 @@ from product.serializers import (
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
     pagination_class = DefaultPagination
     search_fields = ["name", "description"]
     ordering_fields = ["price", "name", "stock"]
+
+    def get_queryset(self):  # type: ignore[override]
+        """Optimize queries with select_related to avoid N+1 problems"""
+        return Product.objects.select_related("category").prefetch_related("reviews")
 
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()
@@ -37,8 +40,13 @@ class ProductViewSet(ModelViewSet):
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all().annotate(product_count=Count("products"))
     serializer_class = CategorySerializer
+
+    def get_queryset(self):  # type: ignore[override]
+        """Optimize category queries with product count annotation"""
+        return Category.objects.annotate(
+            product_count=Count("products")
+        ).prefetch_related("products")
 
 
 class ReviewViewSet(ModelViewSet):
@@ -48,7 +56,10 @@ class ReviewViewSet(ModelViewSet):
     ordering_fields = ["name"]
 
     def get_queryset(self):  # type: ignore[override]
-        return Review.objects.filter(product_id=self.kwargs["product_pk"])
+        """Optimize review queries with product relationship"""
+        return Review.objects.select_related("product").filter(
+            product_id=self.kwargs["product_pk"]
+        )
 
     def get_serializer_context(self):
         return {"product_id": self.kwargs["product_pk"]}

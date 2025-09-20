@@ -1,16 +1,18 @@
 from django.urls import path, include
 from rest_framework import routers  # For DefaultRouter
 from rest_framework_nested import routers as nested_routers  # For NestedDefaultRouter
-
+from order.views import CartViewSet
 from product.views import CategoryViewSet, ProductViewSet, ReviewViewSet
 
 # Main router for categories
 router = routers.DefaultRouter()
-router.register(r"categories", CategoryViewSet)
+router.register(r"categories", CategoryViewSet, basename="category")
+router.register(r"carts", CartViewSet, basename="cart")
 
 # Products router (parent)
 products_router = routers.DefaultRouter()
-products_router.register(r"products", ProductViewSet)
+products_router.register(r"products", ProductViewSet, basename="product")
+
 
 # Nested router for reviews under products
 products_nested_router = nested_routers.NestedDefaultRouter(

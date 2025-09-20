@@ -11,10 +11,14 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "product_count"]
 
     def get_product_count(self, obj):
-        return getattr(obj, "product_count", 0)
+        # Use annotated value if available, otherwise count manually
+        return getattr(obj, "product_count", obj.products.count())
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source="category.name", read_only=True)
+    tax = serializers.SerializerMethodField(method_name="calculate_tax")
+    review_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -25,13 +29,19 @@ class ProductSerializer(serializers.ModelSerializer):
             "price",
             "stock",
             "category",
+            "category_name",
             "tax",
+            "review_count",
         ]
-
-    tax = serializers.SerializerMethodField(method_name="calculate_tax")
 
     def calculate_tax(self, product: Product) -> Decimal:
         return (product.price * Decimal("1.2")).quantize(Decimal("0.01"))
+
+    def get_review_count(self, obj):
+        """Get review count efficiently using prefetched data"""
+        if hasattr(obj, "reviews"):
+            return obj.reviews.count()
+        return 0
 
     def validate_stock(self, value: int) -> int:
         if value < 0:
@@ -45,9 +55,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
+
     class Meta:
         model = Review
-        fields = ["id", "name", "description"]
+        fields = ["id", "name", "description", "product_name"]
 
     def create(self, validated_data):
         product_id = self.context["product_id"]
